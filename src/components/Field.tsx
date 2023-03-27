@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
     Button,
     EditorToolbarButton,
+    FormLabel,
+    Option,
+    Select,
     Table,
     TableBody,
     TableRow,
@@ -74,6 +77,17 @@ const Field = (props: FieldProps) => {
         props.sdk.field.setValue(itemList);
     };
 
+    const createOnChangeSelectHandler = (item: Item, property: 'key' | 'value') => (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        const itemList = items.concat();
+        const index = itemList.findIndex((i) => i.id === item.id);
+
+        itemList.splice(index, 1, { ...item, [property]: e.target.value });
+
+        props.sdk.field.setValue(itemList);
+    };
+
     /** Deletes an item from the list */
     const deleteItem = (item: Item) => {
         props.sdk.field.setValue(items.filter((i) => i.id !== item.id));
@@ -86,13 +100,17 @@ const Field = (props: FieldProps) => {
                     {items.map((item) => (
                         <TableRow key={item.id}>
                             <TableCell>
-                                <TextField
-                                    id="key"
-                                    name="key"
-                                    labelText="Item Name"
+                                <FormLabel htmlFor={`optionSelect-controlled-${item.id}`}>Includes or Excludes</FormLabel>
+                                <Select
+                                    id={`optionSelect-controlled-${item.id}`}
+                                    name={`optionSelect-controlled-${item.id}`}
                                     value={item.key}
-                                    onChange={createOnChangeHandler(item, 'key')}
-                                />
+                                    onChange={createOnChangeSelectHandler(item, 'key')}
+                                    >
+                                    <Option value="">Please choose one...</Option>
+                                    <Option value="includes">includes</Option>
+                                    <Option value="excludes">excludes</Option>
+                                </Select>
                             </TableCell>
                             <TableCell>
                                 <TextField

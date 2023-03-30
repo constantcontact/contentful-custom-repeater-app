@@ -24,6 +24,7 @@ interface Item {
     id: string;
     key: string;
     value: string;
+    operator: string;
 }
 
 /** A simple utility function to create a 'blank' item
@@ -34,6 +35,7 @@ function createItem(): Item {
         id: uuid(),
         key: '',
         value: '',
+        operator: ''
     };
 }
 
@@ -43,8 +45,20 @@ function createItem(): Item {
  * The Field expects and uses a `Contentful JSON field`
  */
 const Field = (props: FieldProps) => {
-    const { valueName = 'Value' } = props.sdk.parameters.instance as any;
+    const { 
+        valueName = 'Value',
+        valueOnly = false,
+        selectName = 'Options', 
+        selectOptions = 'includes, excludes',
+        valueOptions = '',
+        operatorOptions = '',
+        operatorName = 'Operator'
+    } = props.sdk.parameters.instance as any;
     const [items, setItems] = useState<Item[]>([]);
+
+    const selectOpts = selectOptions.split(',').filter((x:any) => x?.length);
+    const valueOpts = valueOptions.split(',').filter((x:any) => x?.length);
+    const operatorOpts = operatorOptions.split(',').filter((x:any) => x?.length);
 
     useEffect(() => {
         // This ensures our app has enough space to render
@@ -77,7 +91,7 @@ const Field = (props: FieldProps) => {
         props.sdk.field.setValue(itemList);
     };
 
-    const createOnChangeSelectHandler = (item: Item, property: 'key' | 'value') => (
+    const createOnChangeSelectHandler = (item: Item, property: 'key' | 'value' | 'operator') => (
         e: React.ChangeEvent<HTMLSelectElement>
     ) => {
         const itemList = items.concat();
@@ -99,28 +113,64 @@ const Field = (props: FieldProps) => {
                 <TableBody>
                     {items.map((item) => (
                         <TableRow key={item.id}>
-                            <TableCell>
-                                <FormLabel htmlFor={`optionSelect-controlled-${item.id}`}>Includes or Excludes</FormLabel>
-                                <Select
-                                    id={`optionSelect-controlled-${item.id}`}
-                                    name={`optionSelect-controlled-${item.id}`}
-                                    value={item.key}
-                                    onChange={createOnChangeSelectHandler(item, 'key')}
-                                    >
-                                    <Option value="">Please choose one...</Option>
-                                    <Option value="includes">includes</Option>
-                                    <Option value="excludes">excludes</Option>
-                                </Select>
-                            </TableCell>
-                            <TableCell>
-                                <TextField
-                                    id="value"
-                                    name="value"
-                                    labelText={valueName}
-                                    value={item.value}
-                                    onChange={createOnChangeHandler(item, 'value')}
-                                />
-                            </TableCell>
+                            {!valueOnly ? (
+                                <TableCell>
+                                    <FormLabel htmlFor={`optionSelect-controlled-${item.id}`}>{selectName}</FormLabel>
+                                    <Select
+                                        id={`optionSelect-controlled-${item.id}`}
+                                        name={`optionSelect-controlled-${item.id}`}
+                                        value={item.key}
+                                        onChange={createOnChangeSelectHandler(item, 'key')}
+                                        >
+                                            <Option value="">Please choose one...</Option>
+                                            {selectOpts.map((opt: any) => ((
+                                                <Option value={opt} key={opt}>{opt}</Option>
+                                            )))}
+                                    </Select>
+                                </TableCell>
+                            ) : null}
+                            {operatorOpts.length ? (
+                                <TableCell>
+                                    <FormLabel htmlFor={`operatorSelect-controlled-${item.id}`}>{operatorName}</FormLabel>
+                                    <Select
+                                        id={`operatorSelect-controlled-${item.id}`}
+                                        name={`operatorSelect-controlled-${item.id}`}
+                                        value={item.operator}
+                                        onChange={createOnChangeSelectHandler(item, 'operator')}
+                                        >
+                                            <Option value="">Please choose one...</Option>
+                                            {operatorOpts.map((opt: any) => ((
+                                                <Option value={opt} key={opt}>{opt}</Option>
+                                            )))}
+                                    </Select>
+                                </TableCell>
+                            ) : null}
+                            {valueOpts.length ? (
+                                <TableCell>
+                                    <FormLabel htmlFor={`optionSelect-controlled-${item.id}`}>{valueName}</FormLabel>
+                                    <Select
+                                        id={`valueSelect-controlled-${item.id}`}
+                                        name={`valueSelect-controlled-${item.id}`}
+                                        value={item.value}
+                                        onChange={createOnChangeSelectHandler(item, 'value')}
+                                        >
+                                            <Option value="">Please choose one...</Option>
+                                            {valueOpts.map((opt: any) => ((
+                                                <Option value={opt} key={opt}>{opt}</Option>
+                                            )))}
+                                    </Select>
+                                </TableCell>
+                            ) : (
+                                <TableCell>
+                                    <TextField
+                                        id="value"
+                                        name="value"
+                                        labelText={valueName}
+                                        value={item.value}
+                                        onChange={createOnChangeHandler(item, 'value')}
+                                    />
+                                </TableCell>
+                            )}
                             <TableCell align="right">
                                 <EditorToolbarButton
                                     label="delete"

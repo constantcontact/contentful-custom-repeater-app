@@ -39,6 +39,13 @@ function createItem(): Item {
     };
 }
 
+const createOptionsArray = (str:string) => str.split(',').reduce((acc, next:string) => {
+    if (next?.length) {
+        acc = acc.concat(next.trim())
+    }
+    return acc;
+}, [] as string[]);
+
 /** The Field component is the Repeater App which shows up 
  * in the Contentful field.
  * 
@@ -56,9 +63,9 @@ const Field = (props: FieldProps) => {
     } = props.sdk.parameters.instance as any;
     const [items, setItems] = useState<Item[]>([]);
 
-    const selectOpts = selectOptions.split(',').filter((x:any) => x?.length);
-    const valueOpts = valueOptions.split(',').filter((x:any) => x?.length);
-    const operatorOpts = operatorOptions.split(',').filter((x:any) => x?.length);
+    const selectOpts = createOptionsArray(selectOptions);
+    const valueOpts = createOptionsArray(valueOptions);
+    const operatorOpts = createOptionsArray(operatorOptions);
 
     useEffect(() => {
         // This ensures our app has enough space to render
